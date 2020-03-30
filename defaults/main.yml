@@ -1,0 +1,20 @@
+---
+# defaults file for ssh_users
+configure_sshd: yes
+# With this var  permit_only_ssh_key set to yes the system will only be accessible using configured public keys.
+permit_only_ssh_key: yes
+# To disable root access to the system.
+disable_root_login: yes
+sshd_config_file: /etc/ssh/sshd_config
+allowed_ssh_users: AllowUsers root batraman
+
+ssh_users:
+  - user_name: batraman
+    user_pass: $6$1JkgbqstRsD$rv9WjU4Nck7lmLM3X5efe8YeouURVmkZ42.p6mQx1d4br40e.U6jtNzIhDq22cUBIhYGWfFOY32sA5h3wolvf.
+    group_name: BatRaman
+    sudo: yes
+    bash: yes
+    sudo_without_pass: yes
+    comment: "BatRaman privileged user"
+
+B4TR4M4Npi2020@

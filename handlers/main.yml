@@ -1,0 +1,6 @@
+---
+# handlers file for ssh_users
+- name : Restart sshd service
+  systemd:
+    name: sshd
+    state: restarted

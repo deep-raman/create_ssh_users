@@ -1,0 +1,73 @@
+---
+# tasks file for ssh_users
+- name: SSH USER | Add group
+  group:
+    name: "{{ item.group_name }}"
+    state: present
+  with_items: "{{ ssh_users }}"
+  
+- name: SSH USER | Create ssh user {{ ssh_user }}
+  user:
+    name: "{{ item.user_name }}"
+    group: "{{ item.group_name }}"
+    password: "{{ item.user_pass }}"
+    state: present
+  with_items: "{{ ssh_users }}"
+
+- name: SSH USER | Enable shell for user
+  user:
+    name: "{{ item.user_name }}"
+    shell: /bin/bash
+  when: item.bash == True
+  with_items: "{{ ssh_users }}"
+
+- name: SSH USER | Create group sudo
+  group:
+    name: sudo
+    state: present
+  when: item.sudo == True
+  with_items: "{{ ssh_users }}"
+    
+- name: SSH USER | Add user to sudoers
+  user:
+    name: "{{ item.user_name }}"
+    groups: sudo
+    append: yes
+  when: item.sudo == True
+  with_items: "{{ ssh_users }}"
+
+- name: SSH USER | Update sudoers file to sudo without password
+  lineinfile: 
+    dest: /etc/sudoers
+    insertafter: EOF
+    line: '{{ item.user_name }} ALL=(ALL) NOPASSWD: ALL'
+    regexp: '^{{ item.user_name }} .*'
+    state: present
+  when: item.sudo_without_pass == True
+  with_items: "{{ ssh_users }}"
+
+- name: SSH USER | Add ssh keys to users
+  authorized_key:
+    user: "{{ item.user_name }}"
+    state: present
+    key: "{{ lookup('file', './files/'+ item.user_name + '.key.pub') }}"
+  with_items: "{{ ssh_users }}"
+  tags:
+    - update_keys
+  
+- import_tasks: configure_sshd.yml
+  when: configure_sshd == True
+  tags:
+    - sshd_config
+
+- name: SSH USER | Add user to sshd_config allow login
+  lineinfile:
+    path: "{{ sshd_config_file }}"
+    state: present
+    regexp: '^AllowUsers'
+    line: "{{ allowed_ssh_users }}"
+    backup: yes
+  notify:
+    - Restart sshd service
+  tags:
+    - allow_ssh_user

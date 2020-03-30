@@ -1,0 +1,26 @@
+- name: SSH | Disable password authentication
+  lineinfile: 
+    dest: "{{ sshd_config_file }}"
+    regexp: "PasswordAuthentication"
+    line: "PasswordAuthentication no"
+    state: present
+  when: permit_only_ssh_key == True
+  notify: 
+    - Restart sshd service
+
+- name: SSH | Disable root login
+  lineinfile: 
+    dest: "{{ sshd_config_file }}"
+    regexp: "^PermitRootLogin"
+    line: "PermitRootLogin no"
+    state: present
+  notify: Restart ssh
+  when: disable_root_login == True
+
+- name: SSH | Disable PAM
+  lineinfile: 
+    dest: "{{ sshd_config_file }}"
+    regexp: "UsePAM"
+    line: "UsePAM no"
+    state: present
+  notify: Restart sshd service
