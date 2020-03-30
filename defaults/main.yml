@@ -6,7 +6,8 @@ permit_only_ssh_key: yes
 # To disable root access to the system.
 disable_root_login: yes
 sshd_config_file: /etc/ssh/sshd_config
-allowed_ssh_users: AllowUsers root batraman
+allowed_ssh_users: AllowUsers batraman
+ssh_port: 2022
 
 ssh_users:
   - user_name: batraman
@@ -16,5 +17,3 @@ ssh_users:
     bash: yes
     sudo_without_pass: yes
     comment: "BatRaman privileged user"
-
-B4TR4M4Npi2020@
