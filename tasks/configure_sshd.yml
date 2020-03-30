@@ -1,26 +1,73 @@
-- name: SSH | Disable password authentication
-  lineinfile: 
+- name: SSH | Remove PermitRootLogin line
+  lineinfile:
     dest: "{{ sshd_config_file }}"
-    regexp: "PasswordAuthentication"
-    line: "PasswordAuthentication no"
-    state: present
-  when: permit_only_ssh_key == True
-  notify: 
+    regexp: "^#?(PermitRootLogin)"
+    state: absent
+  when: disable_root_login == True
+  notify:
     - Restart sshd service
 
-- name: SSH | Disable root login
-  lineinfile: 
+- name: SSH | Remove PermitEmptyPasswords line
+  lineinfile:
     dest: "{{ sshd_config_file }}"
-    regexp: "^PermitRootLogin"
-    line: "PermitRootLogin no"
-    state: present
-  notify: Restart ssh
-  when: disable_root_login == True
+    regexp: "^#?(PermitEmptyPasswords)"
+    state: absent
+  notify:
+    - Restart sshd service
 
-- name: SSH | Disable PAM
-  lineinfile: 
+- name: SSH | Remove Port line
+  lineinfile:
+    dest: "{{ sshd_config_file }}"
+    regexp: "^#Port"
+    state: absent
+  notify:
+    - Restart sshd service
+
+- name: SSH | Remove ListenAddress line
+  lineinfile:
+    dest: "{{ sshd_config_file }}"
+    regexp: "^#ListenAddress"
+    state: absent
+  notify:
+    - Restart sshd service
+
+- name: SSH | Remove PasswordAuthentication line
+  lineinfile:
+    dest: "{{ sshd_config_file }}"
+    regexp: "^#?(PasswordAuthentication)"
+    state: absent
+  when: permit_only_ssh_key == True
+  notify:
+    - Restart sshd service
+
+- name: SSH | Remove UsePAM line
+  lineinfile:
     dest: "{{ sshd_config_file }}"
     regexp: "UsePAM"
-    line: "UsePAM no"
+    state: absent
+  notify:
+    - Restart sshd service
+
+- name: SSH | Remove IgnoreRhosts line
+  lineinfile:
+    dest: "{{ sshd_config_file }}"
+    regexp: "IgnoreRhosts"
+    state: absent
+  notify:
+    - Restart sshd service
+
+- name: SSH | Hardening SSH configuration
+  blockinfile:
+    dest: "{{ sshd_config_file }}"
+    insertafter: "# semanage port"
+    marker: "#{mark}ANSIBLE MANAGED BLOCK"
     state: present
-  notify: Restart sshd service
+    block: |
+      Port {{ ssh_port }}
+      UsePAM no
+      IgnoreRhosts yes
+      PermitRootLogin no
+      PermitEmptyPasswords no
+      PasswordAuthentication no
+  notify:
+    - Restart sshd service
