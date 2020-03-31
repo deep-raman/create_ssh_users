@@ -4,29 +4,80 @@ create_ssh_users
 This role creates ssh users on the desired host/s and secures the ssh server
 configuration.
 
+Role Variables
+--------------
+All these variables are defined in defaults/main.yml
+
+configure_sshd: [yes|no]  If true ssh server will be secured with the options defined in the tasks file configure_sshd.yml
+permit_only_ssh_key: [yes|no] If true the ssh to access to the host/s will only be possible using public key.
+disable_root_login: [yes|no] If true access to the host/s using root won't be possible. So make sure you have created another user before disabling root access.
+sshd_config_file: The ssh server configuration file location , default : /etc/ssh/sshd_config 
+allowed_ssh_users: User/s that will be allowed to have ssh access to the host/s.
+ssh_port: The port on which the ssh server will be listening, default 22
+
+ssh_users:
+  - user_name: user name to create
+    user_pass: user password
+    group_name: user group name
+    sudo: [yes|no] create sudo group and add newly created user into this group
+    bash: [yes|no] to allow shell access
+    sudo_without_pass: [yes|no] allow newly created user to sudo without password
+    comment: an description for the created
+
+To create several users at once just copy and paste the following block personalizing the variables under ssh_users:
+
+   - user_name: 
+     user_pass:
+     group_name: 
+     sudo: [yes|no]
+     bash: [yes|no]
+     sudo_without_pass: [yes|no]
+     comment: ""
+
+Tags
+-----
+
+You can use following tags to limit actions/configurations to perform on the host/s.
+
+update_keys : to update authorized public keys for the user/s
+sshd_config : to configure ssh server
+allow_ssh_user : to update ssh allowed users
+
+
 Requirements
 ------------
 
-None
+- ansible 2.7.7
 
-Role Variables
---------------
-
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
-
-Dependencies
-------------
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+You can an playbook as described below :
 
-    - hosts: servers
+    - hosts: all
       roles:
-         - { role: username.rolename, x: 42 }
+        - { role: create_ssh_users }
+      
+If ansible is being executed by non root user with privileged access :
+      
+      - hosts: all
+        roles:
+          - { role: create_ssh_users }
+        become: true
+
+For the direct one line command execution on localhost use :
+
+   ansible-playbook --connection=local --inventory 127.0.0.1, create_ssh_users.yaml
+   
+To run on the remote hosts using inventory :
+
+   ansible-playbook -i remote_hosts create_ssh_users.yaml
+   
+To run the role using tags :
+
+   ansible-playbook -i remote_hosts create_ssh_users.yaml --tags "sshd_config"
+
 
 License
 -------
@@ -36,4 +87,6 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+	Raman Deep
+	31th March 2020
+	deep.raman85@gmail.com
