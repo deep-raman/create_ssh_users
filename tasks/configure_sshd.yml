@@ -56,6 +56,22 @@
   notify:
     - Restart sshd service
 
+- name: SSH | Remove Protocol line
+  lineinfile:
+    dest: "{{ sshd_config_file }}"
+    regexp: "^#Protocol"
+    state: absent
+  notify:
+    - Restart sshd service
+
+- name: SSH | Remove PubkeyAuthentication line
+  lineinfile:
+    dest: "{{ sshd_config_file }}"
+    regexp: "^#PubkeyAuthentication"
+    state: absent
+  notify:
+    - Restart sshd service
+
 - name: SSH | Hardening SSH configuration
   blockinfile:
     dest: "{{ sshd_config_file }}"
@@ -65,9 +81,11 @@
     block: |
       Port {{ ssh_port }}
       UsePAM no
+      Protocol 2
       IgnoreRhosts yes
       PermitRootLogin no
       PermitEmptyPasswords no
+      PubkeyAuthentication yes
       PasswordAuthentication no
   notify:
     - Restart sshd service
